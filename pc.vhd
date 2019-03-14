@@ -1,34 +1,42 @@
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.std_logic_arith.all;
-use IEEE.std_logic_unsigned.all;
+-- Program Counter
 
-entity ContProg is port (
-	d   : in std_logic_vector (31 downto 0);
-	ld	: in std_logic;  --Cargar/habilitar
-	clr : in std_logic;  --clear
-	clk : in std_logic;	 --señal de reloj
-	inc : in std_logic;	 --incremento
-	q   : inout std_logic_vector (31 downto 0));--salida
-end ContProg;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-architecture behavior of ContProg is
+entity PC is
+	generic(
+	n : integer := 9
+	);
+	port(
+	clk, rst : in std_logic;
+	address : in std_logic_vector(n downto 0);
+	opt : std_logic_vector(1 downto 0);
+	pAddress : out std_logic_vector(n-1 downto 0)
+	);
+end PC;
+
+architecture counter of PC is
+	signal Qp, Qn : unsigned(n-1 downto 0);
 begin
-	process(clk, clr)
+	combinational : process(Qp, opt, address)
 	begin
-		if clr = '1' then
-			q <= x"00000000";
-		elsif rising_edge(clk) then 
-			if ld = '1' then
-				q<= d;
-			end if;
-			if inc = '1' then
-				q<= q + 1; 
-			end if;
+		case opt is
+			when "00" =>						-- Load address
+			Qn <= unsigned(address);
 			
-		end if;
-		end process;  	
-	end behavior;
-	
+			when "01" =>						-- Increment by 1
+			Qn <= Qp + to_unsigned(1, n-1);
 			
+			when "10" =>						-- Increment by 2
+			Qn <= Qp + to_unsigned(2, n-1);
+			
+			when others =>
+			Qn <= Qp;
+		end case;
+		
+	end process combinational;
+	Qp <= (others => '0') when rst = '0' else Qn when rising_edge(clk);
+	pAddress <= std_logic_vector(Qp);
+end counter;
 										   

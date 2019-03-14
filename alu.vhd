@@ -7,11 +7,11 @@ entity ALU1 is
 	bn : integer := 8
 	);
 	port (
-	-- A -> Literall, B -> From memory data
+	-- A -> From memory / literal, B -> From working register
 	A, B : in std_logic_vector( bn - 1 downto 0 );
-	S : in std_logic_vector( 3 downto 0 );
-	f : out std_logic_vector( bn - 1 downto 0 );
-	--[ >, <, =, NEG, SF, ZERO ]
+	Fn : in std_logic_vector( 3 downto 0 );
+	result : out std_logic_vector( bn - 1 downto 0 );
+	--[ >, <, =, NEG, V, ZERO ]
 	flags : out std_logic_vector( 5 downto 0 )
 	);
 end ALU1;
@@ -24,10 +24,10 @@ begin
 	Ae <= '0' & A;
 	Be <= '0' & B;
 	
-	comb: process (Ae, Be, S)
+	comb: process (Ae, Be, Fn)
 	begin	
 		-- Which operation?	
-		case S is
+		case Fn is
 			when "0000" =>										-- ADD
 			Fe <= Ae + Be;
 			flags( 5 downto 1 ) <= "0000" & Fe(bn);
@@ -79,7 +79,7 @@ begin
 			Fe <= Ae;
 			flags( 5 downto 1 ) <= "00000";
 			
-			when "1001" => 										-- NEG (2's complement)
+			when "1001" => 										-- NEG (2s complement)
 			Fe <= ( not Ae ) + 1;
 			flags( 5 downto 1 ) <= "00000";
 			
@@ -120,7 +120,6 @@ begin
 		end if;
 
 	end process;
-        -- Output resutl
-        f <= fe ( bn - 1 downto 0 );
+        -- Output result
+        result <= fe ( bn - 1 downto 0 );
 end arch_ALU;
-			

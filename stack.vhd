@@ -1,69 +1,72 @@
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.std_logic_arith.all;
-use IEEE.std_logic_unsigned.all;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 
-entity LIFO is
+entity stack is
 	generic(
-		m : integer := 8;	  --Numero de bits
-		n : integer := 2;	  -- Lineas de direccion
-		k : integer  := 4	  -- Numero de localidades
+		m : integer := 9;	  -- Number of bits
+		n : integer := 16;	  -- Maximum number of words
+		k : integer  := 4	  -- Number of words
 		);
 	port(
-		RST : in std_logic;  						--Reset de control
-		CLK : in std_logic;						    --Reloj Maestro
-		OPR : in std_logic_vector(1 downto 0);	    --Modo de operacion
-		DE  : in std_logic_vector(m-1 downto 0);    --Dato de entrada
-		DS  : out std_logic_vector(m-1 downto 0);   --Dato de salida
-		E   : out std_logic;					    --Memoria vacia
-		F   : out std_logic 					    --Memoria llena
+		clk, rst : in std_logic;
+		oprMode  : in std_logic_vector(1 downto 0);	    -- Operation Mode
+		addrIn   : in std_logic_vector(m-1 downto 0);
+		addrOut  : out std_logic_vector(m-1 downto 0);
+		emptyStack : out std_logic;
+		fullStack  : out std_logic
 		);
-end LIFO;
+end stack;
 
-architecture Arreglo of LIFO is 
-subtype Ancho_del_registro is std_logic_vector(m-1 downto 0);
-type Memoria is array(natural range <>) of Ancho_del_registro;
-signal Stack : Memoria(0 to k-1);
-signal AE, AS : std_logic_vector(n-1 downto 0) := (others => '0');
-signal FP, EP : std_logic;
+architecture sArray of stack is 
+subtype registerWidth is std_logic_vector(m-1 downto 0);
+type Memory is array(natural range <>) of registerWidth;
+signal stackMem : Memory(0 to k-1);
+signal currLoc, topBottom : std_logic_vector(n-1 downto 0) := (others => '0');
+signal isFull, isEmpty : std_logic;
 begin 
 	
-	Salida: process(AE,EP,FP,Stack)
+	Output: process(currLoc, isFull, isEmpty, stackMem)
 	begin
-		DS <= Stack(conv_integer(unsigned(AE)));
-		F  <= FP;
-		E  <= EP;
-	end process Salida;
+		addrOut <= stackMem(to_integer(unsigned(currLoc)));
+		fullStack <= isFull;
+		emptyStack <= isEmpty;
+	end process Output;
 	
-	Control: process(RST,CLK)
+	Control: process(rst, clk)
 	begin
-		if (RST='0') then
-			AE <= (others => '1');
-			AS <= (others => '0');
-			EP <= '1'; --Memoria vacia
-			FP <= '0'; --Memoria no llena
-		elsif (CLK'event and CLK='1') then
-			case OPR is
-				when "01" => --Solo lectura
-					if (EP = '0') then --Memoria no vacia
-						if(AE = AS) then	
-							EP <= '1'; --Memoria vacia
+		if ( rst = '0' ) then
+			currLoc <= (others => '1');
+			topBottom <= (others => '0');
+			isEmpty <= '1';
+			isFull <= '0';
+
+		elsif ( clk'event and clk = '1' ) then
+			case oprMode is
+				when "01" => -- Read only
+					if (isEmpty = '0') then
+						if(currLoc = topBottom) then	-- The pointer is at the bottom of the stack	
+							isEmpty <= '1';
 						end if;
-						AE <= AE - 1;
+						currLoc <= currLoc - 1;
 					end if;
-					FP <= '0'; --Memoria no esta llena
-				when "10" => -- Solo escritura 
-					if (FP = '0') then --Memoria no llena
-						Stack(conv_integer(unsigned(AE+1))) <= DE;
-						if((AE+1) = NOT(AS)) then
-							FP <= '1'; --Memoria llena
+					isEmpty <= '0';
+				
+				when "10" => -- Write only
+					if (isFull = '0') then
+						stackMem(to_integer(unsigned(currLoc + 1))) <= addrIn;
+						if((currLoc + 1) = NOT(topBottom)) then	-- The pointer is at the top of the stack
+							isFull <= '1'; --Memoria llena
 						end if;
-						AE <= AE+1;
+						currLoc <= currLoc + 1;
 					end if;
-					EP <= '0'; --Memoria no esta vacia
-				when others => null;
+					isEmpty <= '0'; --Memoria no esta vacia
+				
+				when others => -- Nop !
+					null;
 			end case;
 		end if;
 	end process Control;
 	
-end Arreglo;
+end sArray;

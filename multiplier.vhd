@@ -7,28 +7,29 @@ entity Multiplier_VHDL is
            doble: integer:= 16);
   port
   (
-    Nibble1, Nibble2 :  in std_logic_vector(bn-1 downto 0);
-    sel : in std_logic_vector( 1 downto 0 );                    -- Which nibble?
-    AD1, R1 : in std_logic_vector(1 downto 0 );
-  );
+    byte1, byte2 :  in std_logic_vector(bn-1 downto 0);
+    sel 		 : in std_logic_vector( 1 downto 0 );                    -- Which byte?
+    result 		 : out std_logic_vector(bn - 1 downto 0 );
+	address		 : out std_logic_vector(bn downto 0)
+	);
 end entity Multiplier_VHDL;
 
 architecture Behavioral of Multiplier_VHDL is
-  signal Result : std_logic_vector( doble - 1 downto 0 );
+  signal MultResult : std_logic_vector( doble - 1 downto 0 );
 begin
-  Result <= std_logic_vector(unsigned(Nibble1) * unsigned(Nibble2));
-  process(Result, sel)
+  MultResult  <= std_logic_vector(unsigned(byte1) * unsigned(byte2));
+  process(MultResult, sel)
   begin
     case sel is
-      when "00" =>
-        R1 <= ( others 'Z' );
-        AD1 <= ( others 'Z' );
       when "01" =>
-        R1 <= Result( bn - 1 downto 0 );
-        AD1 <= "00000000";              -- Store result on address zero of RAM
-      when others =>
-        R1 <= Result( doble - 1 downto bn );
-        AD1 <= "00000001";              -- Store result on address one of RAM
+        result <= MultResult ( bn - 1 downto 0 );
+        address <= "00000000";              -- Store result on address zero of RAM
+      when "10" =>
+        result <= MultResult ( doble - 1 downto bn );
+        address <= "00000001";              -- Store result on address one of RAM
+	  when others =>
+        result <= ( others => 'Z' );
+        address <= ( others => 'Z' );
     end case;
   end process;
 end Behavioral;
