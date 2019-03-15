@@ -135,10 +135,10 @@ begin
       inSel <= "10";
       pSel <= '1';
       load <= '0';
-      inc <= '0';
+      inc <= '1';
       inc2 <= '0';
       read <= '0';
-      write <= '1';
+      write <= '0';
       Fn <= Fnaux;
       bitOp <= "001";
       selBit <= "000";
