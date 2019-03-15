@@ -24,7 +24,7 @@ type memory is array(natural range <>) of registerWidth;
 signal ramm : memory(0 to k - 1);
 begin
 	-- Read control
-	ReadP : process(readAddr, ramm, read)
+	ReadP : process(storeAddr, ramm, read)
 	begin
 		if (read = '1') then
 			dataOut <= ramm(to_integer(unsigned(storeAddr)));
