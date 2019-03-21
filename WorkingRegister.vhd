@@ -11,7 +11,6 @@ entity WorkingRegister is
         dataIn 	 : in std_logic_vector( n - 1 downto 0 );
         opt 	 : in std_logic_vector( 2 downto 0 );
         sel 	 : in std_logic_vector( 2 downto 0 );                    	-- Bit to work with
-		    setOut 	 : in std_logic;
         opResult : out std_logic;										-- Result of the selected operation
         dataOut  : out std_logic_vector( n - 1 downto 0 )
 	);
