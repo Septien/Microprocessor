@@ -7,4 +7,6 @@ work/
 transcript
 *.mti
 *.mpf
+Quartus/
+*.wlf
 
