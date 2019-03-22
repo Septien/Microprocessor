@@ -2,3 +2,9 @@
 *.o
 *.cf
 *.vcd
+*.bak
+work/
+transcript
+*.mti
+*.mpf
+
