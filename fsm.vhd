@@ -59,11 +59,11 @@ architecture control of FSM is
   end component;
 
 begin
-  AFT : aluFnLUT port map(instruction(16 downto 10), Fnaux);
+  AFT : aluFnLUT port map(instruction(14 downto 8), Fnaux);
   --[ >, <, =, NEG, V, ZERO ]
   SKR : skipReq port map(flags(0), flags(4), flags(5), flags(3), bitOpR,instruction(16 downto 15), instruction(14 downto 8), skipR);
   BOL : BitOpLUT port map(instruction(14 downto 11), bitOpAux);
-  combinational : process(flags, bitOpR, instruction, Fnaux)
+  combinational : process(Qp, flags, bitOpR, instruction, Fnaux, skipR, bitOpAux)
   begin
     case Qp is
     when S0 =>																				-- Initial state
@@ -114,8 +114,8 @@ begin
       inc <= '0';
       inc2 <= '0';
       read <= '1';
-	  write <= '0';
-	  bitOp <= "001";
+	    write <= '0';
+	    bitOp <= "001";
       Fn <= Fnaux;
       selBit <= "000";
       selBy <= "00";
@@ -133,30 +133,30 @@ begin
         memSel <= '1';
         write <= '0';
         inSel <= "00";
-		inc <= '0';
-		inc2 <= '0';
-		bitOp <= "001";
-		selBy <= "01";
+		    inc <= '0';
+		    inc2 <= '0';
+		    bitOp <= "001";
+		    selBy <= "01";
       else
-		selBy <= "00";
+		    selBy <= "00";
         memSel <= '0';
         inSel <= "10";
-		-- Check if d = 1
-	  	if (instruction(10) = '1') then		-- Store on register
-			write <= '1';
-		  	bitOp <= "001";
-	  	else									-- Store on w
-			write <= '0';
-		  	bitOp <= "010";
-	  	end if;
-		--
-		if (skipR = '1') then
-			inc <= '1';
-			inc2 <= '0';
-		else
-			inc <= '0';
-			inc2 <= '1';
-		end if;
+		    -- Check if d = 1
+	  	  if (instruction(10) = '1') then		-- Store on register
+			   write <= '1';
+		  	 bitOp <= "001";
+	  	  else									-- Store on w
+			   write <= '0';
+		  	 bitOp <= "010";
+	  	  end if;
+		  --
+		  if (skipR = '0') then
+			 inc <= '1';
+			 inc2 <= '0';
+		  else
+			 inc <= '0';
+			 inc2 <= '1';
+		  end if;
       end if;
       mulS <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
       selA <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
@@ -208,6 +208,7 @@ begin
       opMode <= "00";
 	
 	when S5 =>								-- Write result back
+		Qn <= S0;
 	  addrSel <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
       memSel <= '0';
       mulS <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.

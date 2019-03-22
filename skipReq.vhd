@@ -12,7 +12,7 @@ end skipReq;
 
 architecture lut of skipReq is
 begin
-	process(instruction, msbInstruction)
+	process(instruction, msbInstruction, z, eq, gt, lt)
 	begin
 		if ( not msbInstruction = "00") then
 			-- INCFSZ, DECFSZ
