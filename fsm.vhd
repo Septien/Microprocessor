@@ -34,6 +34,7 @@ architecture control of FSM is
   signal Fnaux : std_logic_vector(3 downto 0);
   signal skipR : std_logic;
   signal bitOpAux : std_logic_vector(2 downto 0);
+  signal incA, inc2A : std_logic; 
 
   component aluFnLUT is
   port(
@@ -47,7 +48,7 @@ architecture control of FSM is
 	z, lt, gt, eq, b : in std_logic; 							-- Flags from the alu
 	msbInstruction : in std_logic_vector(1 downto 0);
 	instruction : in std_logic_vector(6 downto 0);
-	skip : out std_logic
+	inc, inc2 : out std_logic
 	);
   end component;
   
@@ -61,9 +62,9 @@ architecture control of FSM is
 begin
   AFT : aluFnLUT port map(instruction(14 downto 8), Fnaux);
   --[ >, <, =, NEG, V, ZERO ]
-  SKR : skipReq port map(flags(0), flags(4), flags(5), flags(3), bitOpR,instruction(16 downto 15), instruction(14 downto 8), skipR);
+  SKR : skipReq port map(flags(0), flags(4), flags(5), flags(3), bitOpR, instruction(16 downto 15), instruction(14 downto 8), incA, inc2A);
   BOL : BitOpLUT port map(instruction(14 downto 11), bitOpAux);
-  combinational : process(Qp, flags, bitOpR, instruction, Fnaux, skipR, bitOpAux)
+  combinational : process(Qp, flags, bitOpR, instruction, Fnaux, bitOpAux, incA, inc2A)
   begin
     case Qp is
     when S0 =>																				-- Initial state
@@ -133,8 +134,6 @@ begin
         memSel <= '1';
         write <= '0';
         inSel <= "00";
-		    inc <= '0';
-		    inc2 <= '0';
 		    bitOp <= "001";
 		    selBy <= "01";
       else
@@ -144,20 +143,14 @@ begin
 		    -- Check if d = 1
 	  	  if (instruction(10) = '1') then		-- Store on register
 			   write <= '1';
-		  	 bitOp <= "001";
+		  	  bitOp <= "001";
 	  	  else									-- Store on w
 			   write <= '0';
-		  	 bitOp <= "010";
+		  	  bitOp <= "010";
 	  	  end if;
-		  --
-		  if (skipR = '0') then
-			 inc <= '1';
-			 inc2 <= '0';
-		  else
-			 inc <= '0';
-			 inc2 <= '1';
-		  end if;
       end if;
+      inc <= incA;
+		  inc2 <= inc2A;
       mulS <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
       selA <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
       pSel <= '1';
@@ -216,13 +209,8 @@ begin
       inSel <= "01";
       pSel <= '1';
       load <= '0';
-	  if (skipR = '1') then
-      	inc <= '0';
-      	inc2 <= '1';
-	  else
-		inc <= '1';
-      	inc2 <= '0';
-	  end if;
+  	   inc <= incA;
+		  inc2 <= inc2A;
       read <= '0';
       write <= '1';
       Fn <= "0010";
@@ -240,7 +228,7 @@ begin
       mulS <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
       selA <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
       inSel <= "11";
-      pSel <= '1';
+      pSel <= '0';
       load <= '0';
       inc <= '0';
       inc2 <= '0';
@@ -253,7 +241,7 @@ begin
       opMode <= "10";
 	
 	-- GOTO, RESET, NOP
-	when S7 => 						-- Pop on stack
+	when S7 => 						-- Load address/increase
 	  Qn <= S0;
 	  -- Signals
       addrSel <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
@@ -261,12 +249,12 @@ begin
       mulS <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
       selA <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
       inSel <= "11";
-      pSel <= '1';
+      pSel <= '0';
 	  if (instruction(14 downto 11) = "0110") then -- NOP
-		load <= '0';
-		inc <= '1';
+		  load <= '0';
+		  inc <= '1';
 	  else
-		load <= '1';
+		  load <= '1';
       	inc <= '0';
 	  end if;
       inc2 <= '0';
@@ -279,7 +267,7 @@ begin
       opMode <= "01";
 	
 	-- RETURN, RETLW
-	when S8 =>
+	when S8 =>         -- Pop on stack
 	  Qn <= S0;
 	  -- Signals
 	  if (instruction(14 downto 11) = "1010") then		-- RETLW
