@@ -10,8 +10,8 @@ entity PC is
 	);
 	port(
 	clk, rst : in std_logic;
-	address : in std_logic_vector(n downto 0);
-	opt : std_logic_vector(1 downto 0);
+	address : in std_logic_vector(n-1 downto 0);
+	inc, inc2, load : in std_logic;
 	pAddress : out std_logic_vector(n-1 downto 0)
 	);
 end PC;
@@ -19,22 +19,17 @@ end PC;
 architecture counter of PC is
 	signal Qp, Qn : unsigned(n-1 downto 0);
 begin
-	combinational : process(Qp, opt, address)
+	combinational : process(Qp, inc, inc2, load, address)
 	begin
-		case opt is
-			when "00" =>						-- Load address
-			Qn <= unsigned(address);
-			
-			when "01" =>						-- Increment by 1
-			Qn <= Qp + to_unsigned(1, n-1);
-			
-			when "10" =>						-- Increment by 2
-			Qn <= Qp + to_unsigned(2, n-1);
-			
-			when others =>
-			Qn <= Qp;
-		end case;
-		
+	  if (load = '1') then
+	    Qn <= unsigned(address);
+	  elsif (inc = '1') then
+	    Qn <= Qp + to_unsigned(1, n-1);
+	  elsif (inc2 = '1') then
+	    Qn <= Qp + to_unsigned(2, n-1);
+	  else
+	    Qn <= Qp;
+	  end if;		
 	end process combinational;
 	Qp <= (others => '0') when rst = '0' else Qn when rising_edge(clk);
 	pAddress <= std_logic_vector(Qp);
