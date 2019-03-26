@@ -14,7 +14,9 @@ entity RAM is
 	write     : in std_logic;
 	read 	  : in std_logic;
 	dataIn 	  : in std_logic_vector(m - 1 downto 0);
-	dataOut   : out std_logic_vector(m - 1 downto 0)
+	dataOut   : out std_logic_vector(m - 1 downto 0);
+	DP1, DP2, DP3, DP4 : out std_logic_vector(m - 1 downto 0);
+	leds1 : out std_logic_vector(m - 1 downto 0)
 	);
 end RAM;
 
@@ -42,5 +44,11 @@ begin
 			end if;
 		end if;
 	end process WriteP;
+	-- Output to leds / 7seg displays
+	DP1 <= ramm(2);
+	DP2 <= ramm(3);
+	DP3 <= ramm(4);
+	DP4 <= ramm(5);
+	leds1 <= ramm(6);
 	
 end mainMemory;
