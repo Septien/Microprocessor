@@ -51,8 +51,8 @@ begin
   Control : FSM port map(clk, rst, flags, bitOpR, instruction, addrSel, memSel, mulS, selA, inSel, pSel, load, inc, inc2, read, write, Fn, bitOp, selBit, selBy, opMode);
   clk <= not clk after 10 ns;
   rst <= '0', '1' after 10 ns;
-  instruction <= "10000010010101010";
-  flags <= "000000", "100010" after 40 ns;
+  instruction <= "00110000110101010";--"00011000000000000";--"01000101010101010";--"11001000010101010";--"10000001010101010";
+  flags <= "000001";--, "100010" after 40 ns;
   bitOpR <= '0';
   
 end Bench;
