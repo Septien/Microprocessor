@@ -14,15 +14,15 @@ entity FSM is
     addrSel, memSel : out std_logic;
     mulS, selA : out std_logic;
     inSel : out std_logic_vector(1 downto 0);
-	pSel : out std_logic;
+	  pSel : out std_logic;
     -- To programm counter
     load, inc, inc2 : out std_logic;
     -- To RAM
     read, write : out std_logic;
     -- Arithmetic/logic signals
     Fn : out std_logic_vector(3 downto 0);
-	bitOp, selBit : out std_logic_vector(2 downto 0);
-	selBy : out std_logic_vector(1 downto 0);
+	  bitOp, selBit : out std_logic_vector(2 downto 0);
+	  selBy : out std_logic_vector(1 downto 0);
     -- To stack
     opMode : out std_logic_vector(1 downto 0)
   );
