@@ -93,18 +93,18 @@ with open("rom.vhd", "w") as rom:
     rom.write("\tend ROM;\n")
     rom.write("\n")
     rom.write("architecture LUT of ROM is\n")
-    rom.write("\ttype : mem is array(0 to 2**nbitsaddr - 1) of std_logic_vector(nbitsdata - 1 downto 0);\n")
+    rom.write("\ttype mem is array(0 to 2**nbitsaddr - 1) of std_logic_vector(nbitsdata - 1 downto 0);\n")
     rom.write("\tsignal rom1 : mem := (\n")
     codeLen = len(binaryCode)
-    rstr = "\t\t{0} => {1}".format(0, binaryCode[0])
+    rstr = "\t\t{0} => \"{1}\"".format(0, binaryCode[0])
     rom.write(rstr)
     for i in range(1, codeLen):
-        rstr = ",\n\t\t{0} => {1}".format(i, binaryCode[i])
+        rstr = ",\n\t\t{0} => \"{1}\"".format(i, binaryCode[i])
         rom.write(rstr)
     print(codeLen)
     if codeLen < 512:
         for i in range(codeLen, 512):
-            rstr = ",\n\t\t{0} => {1}".format(i, "00000000000000000")
+            rstr = ",\n\t\t{0} => \"{1}\"".format(i, "00000000000000000")
             rom.write(rstr)
     rom.write("\t\t);\n")
     rom.write("begin\n")
@@ -113,3 +113,4 @@ with open("rom.vhd", "w") as rom:
     rom.write("\t\tdata <= rom1(to_integer(unsigned(addr)));\n")
     rom.write("\tend process;\n")
     rom.write("end LUT;\n")
+
