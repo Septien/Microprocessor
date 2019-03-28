@@ -46,6 +46,8 @@ begin
       Fn <= "1100";
     when "1110000" =>                               -- Swap f
       Fn <= "1110";
+    when "1111011" | "1111010" | "1111001" =>       -- MOV
+      Fn <= "1000";
     when others =>
       Fn <= "----";
     end case;
