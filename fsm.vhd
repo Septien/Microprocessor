@@ -29,12 +29,13 @@ entity FSM is
 end FSM;
 
 architecture control of FSM is
-  type state is (S0, S1, S2, S3, S4, S5, S6, S7, S8);
+  type state is (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9);
   signal Qp, Qn : state;
   signal Fnaux : std_logic_vector(3 downto 0);
   signal skipR : std_logic;
   signal bitOpAux : std_logic_vector(2 downto 0);
   signal incA, inc2A : std_logic; 
+  signal selBitA : std_logic_vector(2 downto 0);
 
   component aluFnLUT is
   port(
@@ -58,12 +59,20 @@ architecture control of FSM is
 	bitOp : out std_logic_vector(2 downto 0)
 	);
   end component;
+  
+  component selBitMux is
+  port(
+    instruction : in std_logic_vector(8 downto 0);
+    selBit : out std_logic_vector(2 downto 0)
+  );
+  end component;
 
 begin
   AFT : aluFnLUT port map(instruction(14 downto 8), Fnaux);
   --[ >, <, =, NEG, V, ZERO ]
   SKR : skipReq port map(flags(0), flags(4), flags(5), flags(3), bitOpR, instruction(16 downto 15), instruction(14 downto 8), incA, inc2A);
   BOL : BitOpLUT port map(instruction(14 downto 11), bitOpAux);
+  SBM : selBitMux port map(instruction(16 downto 8), selBitA);
   combinational : process(Qp, flags, bitOpR, instruction, Fnaux, bitOpAux, incA, inc2A)
   begin
     case Qp is
@@ -96,7 +105,7 @@ begin
       write <= '0';
       Fn <= Fnaux;
       bitOp <= "001";
-      selBit <= instruction(10 downto 8);
+      selBit <= selBitA;
       selBy <= "00";
       opMode <= "00";
       
@@ -114,7 +123,7 @@ begin
       load <= '0';
       inc <= '0';
       inc2 <= '0';
-      read <= '1';
+      read <= instruction(16) xor instruction(15);
 	    write <= '0';
 	    bitOp <= "001";
       Fn <= Fnaux;
@@ -155,7 +164,7 @@ begin
       selA <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
       pSel <= '1';
       load <= '0';
-      read <= '1';
+      read <= instruction(16) xor instruction(15);
       Fn <= Fnaux;
       selBit <= "000";
       opMode <= "00";
@@ -194,7 +203,7 @@ begin
       inc2 <= '0';
       read <= '1';
       write <= '0';
-      Fn <= "0010";
+      Fn <= "----";
       bitOp <= bitOpAux;
       selBit <= instruction(10 downto 8);
       selBy <= "00";
@@ -213,7 +222,7 @@ begin
 		  inc2 <= inc2A;
       read <= '0';
       write <= '1';
-      Fn <= "0010";
+      Fn <= "----";
       bitOp <= bitOpAux;
       selBit <= instruction(10 downto 8);
       selBy <= "00";
@@ -234,7 +243,7 @@ begin
       inc2 <= '0';
       read <= '0';
       write <= '0';
-      Fn <= "0010";
+      Fn <= "----";
       bitOp <= "001";
       selBit <= "000";
       selBy <= "00";
@@ -243,7 +252,7 @@ begin
 	-- GOTO, RESET, NOP
 	when S7 => 						-- Load address/increase
 	  Qn <= S0;
-	  -- Signals
+     -- Signals
       addrSel <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
       memSel <= '0';
       mulS <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
@@ -264,11 +273,11 @@ begin
       bitOp <= "001";
       selBit <= "000";
       selBy <= "00";
-      opMode <= "01";
-	
-	-- RETURN, RETLW
-	when S8 =>         -- Pop on stack
-	  Qn <= S0;
+      opMode <= "00";
+  
+  -- RETURN, RETLW
+  when S8 =>      -- Pop from stack  
+    Qn <= S9;
 	  -- Signals
 	  if (instruction(14 downto 11) = "1010") then		-- RETLW
 		  addrSel <= '1';
@@ -278,7 +287,7 @@ begin
 	  else
 		  addrSel <= '0';
 		  selA <= '0';
-		  Fn <= "0010";
+		  Fn <= "----";
 		  bitOp <= "001";
 	  end if;
       memSel <= '0';
@@ -290,11 +299,31 @@ begin
       inc2 <= '0';
       read <= '0';
       write <= '0';
-      Fn <= "0010";
+      selBit <= "000";
+      selBy <= "00";
+      opMode <= "00";
+    
+	
+	when S9 =>         -- increase pc
+	  Qn <= S0;
+	  -- Signals
+      addrSel <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
+      memSel <= '0';
+      mulS <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
+      selA <= instruction(16) and instruction(15);  -- A literal will be sent to the alu/multiplier when both msb are 1.
+      inSel <= "11";
+      pSel <= '1';
+      load <= '0';
+      inc <= '1';
+      inc2 <= '0';
+      read <= '0';
+      write <= '0';
+      Fn <= "----";
       bitOp <= "001";
       selBit <= "000";
       selBy <= "00";
       opMode <= "01";
+
 	end case;	  
   end process combinational;
 
