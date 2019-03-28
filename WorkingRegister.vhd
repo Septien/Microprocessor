@@ -47,7 +47,7 @@ begin
 	end process;
 	
 	dataOut <= Qp;
-    opResult <= bp;
+  opResult <= bp;
 
 	secuencial: process(RST,CLK)
 	begin
@@ -57,19 +57,19 @@ begin
 			bp <= bn;
             case sel is
             when "000" =>
-              Qp <= Qn( n - 1 downto 1 ) & bp;
+              Qp <= Qn( n - 1 downto 1 ) & bn;
             when "001" =>
-              Qp <= Qn( n - 1 downto 2 ) & bp & Qn( 0 );
+              Qp <= Qn( n - 1 downto 2 ) & bn & Qn( 0 );
             when "010" =>
-              Qp <= Qn( n - 1 downto 3 ) & bp & Qn( 1 downto 0 );
+              Qp <= Qn( n - 1 downto 3 ) & bn & Qn( 1 downto 0 );
             when "011" =>
-              Qp <= Qn( n - 1 downto 4 ) & bp & Qn( 2 downto 0 );
+              Qp <= Qn( n - 1 downto 4 ) & bn & Qn( 2 downto 0 );
             when "100" =>
-              Qp <= Qn( n - 1 downto 5 ) & bp & Qn( 3 downto 0 );
+              Qp <= Qn( n - 1 downto 5 ) & bn & Qn( 3 downto 0 );
             when "101" =>
-              Qp <= Qn( n - 1 downto 6 ) & bp & Qn( 4 downto 0 );
+              Qp <= Qn( n - 1 downto 6 ) & bn & Qn( 4 downto 0 );
             when "110" =>
-              Qp <= Qn ( n - 1 ) & bp & Qn ( 5 downto 0 );
+              Qp <= Qn ( n - 1 ) & bn & Qn ( 5 downto 0 );
             when others =>
               Qp <= bp & Qn( 6 downto 0 );
             end case;
