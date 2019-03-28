@@ -9,18 +9,18 @@ codeDict = {
     'incfsz': '100000010',
     'infsnz': '100000001',
     'subwf' : '100001',
-    'sublf' : '110000',
+    'sublw' : '110000',
     'decf'  : '100000100',
     'decfsz': '100000010',
     'dcfsnz': '100000001',
     'mulwf' : '100010',
-    'mullf' : '110010',
+    'mullw' : '110010',
     'andwf' : '100011',
-    'andlf' : '110011',
+    'andlw' : '110011',
     'iorwf' : '100100',
-    'iorlf' : '110100',
+    'iorlw' : '110100',
     'xorwf' : '100101',
-    'xorlf' : '110101',
+    'xorlw' : '110101',
     'negf'  : '100110',
     'comf'  : '100111',
     'cpfseq': '101000100',
@@ -34,7 +34,7 @@ codeDict = {
     'swapf' : '101110',
     'movf'  : '101111011',
     'movwf' : '101111010',
-    'movlf' : '101111001',
+    'movlw' : '111111001',
     'bcf'   : '010001',
     'bsf'   : '010010',
     'btfsc' : '010011',
@@ -62,7 +62,7 @@ with open("codigo.asm", "r") as file:
         if (len(opcode) > 6):
             if (opcode == "101111011"):
                 opcode[7] = sLine[2]
-            nbit = sLine[1][1:8]
+            nbit = sLine[1][1:]
         else:
             if (opcode == "001100" or opcode == "000110" or opcode == "001000"):
                 nbit = "00000000000"
@@ -72,8 +72,13 @@ with open("codigo.asm", "r") as file:
                 else:
                     nbit = sLine[2] + '0' + sLine[1]
             else:
-                nbit = '00' + sLine[1]
+								# Store literals on w
+                if (opcode[0] == '1' and opcode[1] == '1'):
+                    nbit = '00' + sLine[1]
+                else:
+                    nbit = '10' + sLine[1]
         opcode = opcode + nbit
+        assert len(opcode) == 17, "Incorrect length: %s" % sLine
         binaryCode.append(opcode)
 
 with open("rom.vhd", "w") as rom:
@@ -82,35 +87,24 @@ with open("rom.vhd", "w") as rom:
     rom.write("use ieee.numeric_std.all;\n")
     rom.write("\n")
     rom.write("entity ROM is\n")
-    rom.write("\tgeneric(\n")
-    rom.write("\t\tnbitsaddr : integer := 9;\n")
-    rom.write("\t\tnbitsdata : integer := 17\n")
-    rom.write("\t\t);\n")
     rom.write("\tport(\n")
-    rom.write("\t\taddr : in std_logic_vector(nbitsaddr - 1 downto 0);\n")
-    rom.write("\t\tdata : out std_logic_vector(nbitsdata - 1 downto 0)\n")
+    rom.write("\t\taddr : in std_logic_vector(8 downto 0);\n")
+    rom.write("\t\tdata : out std_logic_vector(16 downto 0)\n")
     rom.write("\t\t);\n")
     rom.write("\tend ROM;\n")
     rom.write("\n")
     rom.write("architecture LUT of ROM is\n")
-    rom.write("\ttype mem is array(0 to 2**nbitsaddr - 1) of std_logic_vector(nbitsdata - 1 downto 0);\n")
-    rom.write("\tsignal rom1 : mem := (\n")
-    codeLen = len(binaryCode)
-    rstr = "\t\t{0} => \"{1}\"".format(0, binaryCode[0])
-    rom.write(rstr)
-    for i in range(1, codeLen):
-        rstr = ",\n\t\t{0} => \"{1}\"".format(i, binaryCode[i])
-        rom.write(rstr)
-    print(codeLen)
-    if codeLen < 512:
-        for i in range(codeLen, 512):
-            rstr = ",\n\t\t{0} => \"{1}\"".format(i, "00000000000000000")
-            rom.write(rstr)
-    rom.write("\t\t);\n")
     rom.write("begin\n")
     rom.write("\tprocess(addr)\n")
     rom.write("\tbegin\n")
-    rom.write("\t\tdata <= rom1(to_integer(unsigned(addr)));\n")
+    rom.write("\t\tcase addr is\n");
+    codeLen = len(binaryCode)
+    for i in range(codeLen):
+        rstr = "\t\t\twhen \"{0:09b}\" => data <= \"{1}\";\n".format(i, binaryCode[i])
+        rom.write(rstr)
+    if codeLen < 512:
+        rom.write("\t\t\twhen others => data <= \"00000000000000000\";\n")
+    rom.write("\t\tend case;\n")
     rom.write("\tend process;\n")
     rom.write("end LUT;\n")
 
