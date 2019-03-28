@@ -32,20 +32,19 @@ architecture micro of master is
   signal opMode : std_logic_vector(1 downto 0);
   signal muxA, C : std_logic_vector(8 downto 0);    -- Input to ALU
   signal B : std_logic_vector(7 downto 0);
-  signal addrIn, addrOut : std_logic_vector(8 downto 0);  -- to the stack
+  signal addrOut : std_logic_vector(8 downto 0);  -- from the stack
   signal addrL : std_logic_vector(8 downto 0);      -- Address to load on PC
   signal outMul : std_logic_vector(7 downto 0);
   signal addrMul : std_logic_vector(8 downto 0);
   signal outputRAM : std_logic_vector(7 downto 0);
   signal outputRAMA : std_logic_vector(8 downto 0);
   signal inputRAM : std_logic_vector(7 downto 0);
-  signal PCAddr : std_logic_vector(8 downto 0);
   signal result : std_logic_vector(7 downto 0);
   signal memLocSel : std_logic_vector(8 downto 0);
   -- To leds/7seg
   signal DP1A, DP2A, DP3A, DP4A, ledsA : std_logic_vector(7 downto 0);
-  signal D1 : std_logic_vector(8 downto 0);
   signal literalV, addr : std_logic_vector(8 downto 0);
+  signal pAddress : std_logic_vector(8 downto 0);
   
   -- Components
   component WorkingRegister is
@@ -170,20 +169,28 @@ architecture micro of master is
   );
   end component;
   
+  component ROM is
+	port(
+		addr : in std_logic_vector(8 downto 0);
+		data : out std_logic_vector(16 downto 0)
+		);
+	end component;
+  
 begin
+  PGR  : ROM port map(pAddress, instruction);
   CTRL : FSM port map(clk, rst, flags, bitOpR, instruction, addrSel, memSel, mulS, selA, inSel, pSel, load, inc, inc2, read, write, Fn, bitOp, selBit, selBy, opMode);
-  ALU  : ALU1 port map(muxA(7 downto 0), B, Fn, result, flags);
-  PC1  : PC port map(clk, rst, PCAddr, inc, inc2, load);
-  LIFO : stack port map(clk, rst, opMode, addrIn, addrOut, open, open);
-  MRAM : RAM generic map(8, 9, 256) port map(clk, memLocSel(7 downto 0), write, read, inputRAM, outputRAM, DP1A, DP2A, DP3A, DP4A, ledsA);
+  ALU  : ALU1 port map(muxA(7 downto 0), B, Fn, outputRAM, flags);
+  PC1  : PC port map(clk, rst, addrL, inc, inc2, load, pAddress);
+  LIFO : stack port map(clk, rst, opMode, pAddress, addrOut, open, open);
+  MRAM : RAM generic map(8, 8, 256) port map(clk, memLocSel(7 downto 0), write, read, inputRAM, outputRAM, DP1A, DP2A, DP3A, DP4A, ledsA);
   W    : WorkingRegister port map(rst, clk, outputRAM, bitOp, selBit, bitOpR, B);
   MUL  : Multiplier_VHDL port map(C(7 downto 0), B, selBy, outMul, addrMul);
-  DMX  : DemuxAddr port map(D1, addrSel, literalV, addr);
+  DMX  : DemuxAddr port map(instruction(8 downto 0), addrSel, literalV, addr);
   AMUX : mux port map(selA, outputRAMA, literalV, muxA);
   MMUX : mux port map(mulS, literalV, outputRAMA, C);
   MPC  : mux port map(pSel, addr, addrOut, addrL);
   MLMX : mux port map(memSel, addr, addrMul, memLocSel);
-  MXIN  : mux4a1 port map(inSel, outMul, B, result, inputRAM);
+  MXIN : mux4a1 port map(inSel, outMul, B, result, inputRAM);
    
   outputRAMA <= '0' & outputRAM; 
   -- To 7seg/leds
