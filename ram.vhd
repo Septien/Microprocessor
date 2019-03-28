@@ -5,8 +5,8 @@ use ieee.numeric_std.all;
 entity RAM is
 	generic(
 	m : integer := 8; 						-- Number of bits
-	n : integer := 2;						-- Maximum number of words
-	k : integer := 4						-- Number of words
+	n : integer := 8;						-- Maximum number of words
+	k : integer := 256						-- Number of words
 	);
 	port(
 	clk 	  : in std_logic;
