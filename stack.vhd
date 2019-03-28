@@ -6,8 +6,8 @@ use ieee.std_logic_unsigned.all;
 entity stack is
 	generic(
 		m : integer := 9;	  -- Number of bits
-		n : integer := 16;	  -- Maximum number of words
-		k : integer  := 4	  -- Number of words
+		n : integer := 4;	  -- Maximum number of words
+		k : integer  := 16	  -- Number of words
 		);
 	port(
 		clk, rst : in std_logic;
