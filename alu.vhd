@@ -107,9 +107,13 @@ begin
 			Fe <= '0' & Ae( bn - 5 downto 0 ) & Ae ( bn - 1 downto 4 );
 			flags(5 downto 1) <= "00000";
 			
-			when others =>										-- XOR
+			when "1111" =>										-- XOR
 			Fe <= Ae xor Be;
 			flags(5 downto 1) <= "00000";
+			
+			when others =>
+			  Fe <= (others => 'Z');
+			  flags(5 downto 1) <= "00000";
 			
 		end case;
 		-- Verify if result of operations is zero
