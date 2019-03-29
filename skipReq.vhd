@@ -17,7 +17,7 @@ begin
 	  -- Arithmetic/logic
 	  if (msbInstruction = "10" or msbInstruction = "11") then
 		  -- First cycle of multiplication
-		  if (instruction = "0010---") then
+		  if (instruction(6 downto 3) = "0010") then
 			  inc <= '0';
 			  inc2 <= '0';
 			-- INCFSZ, DECFSZ
@@ -46,15 +46,15 @@ begin
 			end if;
 		elsif (msbInstruction = "01") then
 			-- TSTFSZ
-			if (instruction = "1001---" and z = '1') then
+			if (instruction(6 downto 3) = "1001" and z = '1') then
 				inc <= '0';
 				inc2 <= '1';
 			-- BTFSC
-			elsif (instruction = "0011---" and b = '0') then
+			elsif (instruction(6 downto 3) = "0011" and b = '0') then
 				inc <= '0';
 				inc2 <= '1';
 			-- BTFSS
-			elsif (instruction = "0100---" and b = '1') then
+			elsif (instruction(6 downto 3) = "0100" and b = '1') then
 				inc <= '0';
 				inc2 <= '1';
 			else
