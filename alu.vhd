@@ -18,13 +18,15 @@ end ALU1;
 
 architecture arch_ALU of ALU1 is
 signal Ae, Be, Fe : std_logic_vector ( bn downto 0 );	-- Input and output with an extra bit, for carry
-signal zero : std_logic_vector ( bn downto 0 ) := ( others => '0' );
-signal ones : std_logic_vector( bn downto 0 ) := ( others => '1' );
+signal zero : std_logic_vector ( bn downto 0 );
+signal ones : std_logic_vector( bn downto 0 );
 begin
+	zero <= ( others => '0' );
+	ones <= ( others => '1' );
 	Ae <= '0' & A;
 	Be <= '0' & B;
 	
-	comb: process (Ae, Be, Fn)
+	comb: process (Ae, Be, Fn, zero, ones, Fe)
 	begin	
 		-- Which operation?	
 		case Fn is
@@ -37,7 +39,7 @@ begin
 			flags( 5 downto 1 ) <= "00000";
 			
 			when "0010" =>										-- CLEAR
-			Fe <= ( others => '0' );
+			Fe <= zero;
 			flags( 5 downto 1 ) <= "00000";
 			
 			when "0011" =>										-- Complement
@@ -92,7 +94,7 @@ begin
 			flags(5 downto 1) <= "00000";
 			
 			when "1100" => 										-- Set to 1
-			Fe <= ( others => '1' );
+			Fe <= ones;
 			flags( 5 downto 1 ) <= "00000";
 			
 			when "1101" => 										-- Substract
@@ -117,13 +119,13 @@ begin
 			
 		end case;
 		-- Verify if result of operations is zero
-		if ( fe( bn - 1 downto 0 ) = zero ) then
+		if ( Fe( bn - 1 downto 0 ) = zero ) then
 			flags( 0 ) <= '1';
 		else
 			flags( 0 ) <= '0';
 		end if;
-
-	end process;
-        -- Output result
-        result <= fe ( bn - 1 downto 0 );
+    
+    -- Output result
+    result <= Fe ( bn - 1 downto 0 );
+	end process comb;
 end arch_ALU;
