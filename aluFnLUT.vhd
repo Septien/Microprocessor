@@ -13,40 +13,45 @@ architecture LUT of aluFnLUT is
 begin
   mux : process(opcode)
   begin
-    case opcode is
-    when "0000000" =>                               -- ADD
-      Fn <= "0000";
-    when "0000100" | "0000010" | "0000001" =>       -- Inc
-      Fn <= "0110";
-    when "0001000" =>                               -- SUB
-      Fn <= "1101";
-    when "0001100" | "0001010" | "0001001" =>       -- Dec
-      Fn <= "0101";
-    when "0011000" =>                               -- AND
+    case opcode(6 downto 3) is
+    when "0000" =>
+      if (opcode(2 downto 0) = "101" or opcode(2 downto 0) = "110" or opcode(2 downto 0) = "111") then
+        Fn <= "0110";                               -- Inc
+      else
+        Fn <= "0000";                               -- ADD
+      end if;
+      
+    when "0001" =>
+      if (opcode(2 downto 0) = "101" or opcode(2 downto 0) = "110" or opcode(2 downto 0) = "111") then
+        Fn <= "0101";                               -- DEC
+      else
+        Fn <= "0110";                               -- SUB
+      end if;
+    when "0011" =>                                  -- AND
       Fn <= "0001";
-    when "0100000" =>                               -- IOR
+    when "0100" =>                                  -- IOR
       Fn <= "0111";
-    when "0101000" =>                               -- XOR
+    when "0101" =>                                  -- XOR
       Fn <= "1111";
-    when "0110000" =>                               -- NEG (2's complement)
+    when "0110" =>                                  -- NEG (2's complement)
       Fn <= "1001";
-    when "0111000" =>                               -- COM (1's complement)
+    when "0111" =>                                  -- COM (1's complement)
       Fn <= "0011";
-    when "1000000" =>                               -- Comparison
+    when "1000" =>                                  -- Comparison
       Fn <= "0100";
-    when "1001000" =>                               -- TSTFSZ
+    when "1001" =>                                  -- TSTFSZ
       Fn <= "1000";
-    when "1010000" =>                               -- Left rotate
+    when "1010" =>                                  -- Left rotate
       Fn <= "1010";
-    when "1011000" =>                               -- Right rotate
+    when "1011" =>                                  -- Right rotate
       Fn <= "1011";
-    when "1100000" =>                               -- Clear f
+    when "1100" =>                                  -- Clear f
       Fn <= "0010";
-    when "1101000" =>                               -- Set f
+    when "1101" =>                                  -- Set f
       Fn <= "1100";
-    when "1110000" =>                               -- Swap f
+    when "1110" =>                                  -- Swap f
       Fn <= "1110";
-    when "1111011" | "1111010" | "1111001" =>       -- MOV
+    when "1111" =>                                  -- MOV
       Fn <= "1000";
     when others =>
       Fn <= "----";
