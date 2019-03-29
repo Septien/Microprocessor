@@ -73,7 +73,7 @@ begin
   SKR : skipReq port map(flags(0), flags(4), flags(5), flags(3), bitOpR, instruction(16 downto 15), instruction(14 downto 8), incA, inc2A);
   BOL : BitOpLUT port map(instruction(14 downto 11), bitOpAux);
   SBM : selBitMux port map(instruction(16 downto 8), selBitA);
-  combinational : process(Qp, flags, bitOpR, instruction, Fnaux, bitOpAux, incA, inc2A)
+  combinational : process(Qp, flags, bitOpR, instruction, Fnaux, bitOpAux, incA, inc2A, selBitA)
   begin
     case Qp is
     when S0 =>																				-- Initial state
@@ -103,7 +103,7 @@ begin
       inc2 <= '0';
       read <= instruction(16) xor instruction(15);
       write <= '0';
-      Fn <= Fnaux;
+      Fn <= "----";
       bitOp <= "001";
       selBit <= selBitA;
       selBy <= "00";
@@ -148,15 +148,28 @@ begin
       else
 		    selBy <= "00";
         memSel <= '0';
-        inSel <= "10";
 		    -- Check if d = 1
-	  	  if (instruction(10) = '1') then		-- Store on register
-			   write <= '1';
-		  	  bitOp <= "001";
-	  	  else									-- Store on w
-			   write <= '0';
-		  	  bitOp <= "010";
-	  	  end if;
+		    if (instruction(14 downto 8) = "1111111" or instruction(14 downto 8) = "1111011") then    --movf
+		      write <= '1';
+		      bitOp <= "010";
+		      inSel <= "10";
+		    elsif (instruction(14 downto 8) = "1111001") then  --movlw
+		      write <= '0';
+		      bitOp <= "010";
+		      inSel <= "11";
+		    elsif (instruction(14 downto 8) = "1111010") then   --movwf
+		      write <= '1';
+		      bitOp <= "001";
+		      inSel <= "01";
+		    elsif (instruction(10) = '0') then
+		      write <= '0';
+		      bitOp <= "010";
+		      inSel <= "11";
+		     else
+		      write <= '1';
+		  	   bitOp <= "001";
+		  	   inSel <= "10";
+		     end if;
       end if;
       inc <= incA;
 		  inc2 <= inc2A;
