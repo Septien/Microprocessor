@@ -5,14 +5,14 @@ import sys
 codeDict = {
     'addwf' : '100000',
     'addlw' : '110000',
-    'incf'  : '100000100',
-    'incfsz': '100000010',
-    'infsnz': '100000001',
+    'incf'  : '100000101',
+    'incfsz': '100000110',
+    'infsnz': '100000111',
     'subwf' : '100001',
-    'sublw' : '110000',
-    'decf'  : '100000100',
-    'decfsz': '100000010',
-    'dcfsnz': '100000001',
+    'sublw' : '110001',
+    'decf'  : '100001101',
+    'decfsz': '100001110',
+    'dcfsnz': '100001111',
     'mulwf' : '100010',
     'mullw' : '110010',
     'andwf' : '100011',
@@ -23,16 +23,16 @@ codeDict = {
     'xorlw' : '110101',
     'negf'  : '100110',
     'comf'  : '100111',
-    'cpfseq': '101000100',
+    'cpfseq': '101000001',
     'cpfsgt': '101000010',
-    'cpfslt': '101000001',
+    'cpfslt': '101000011',
     'tstfsz': '101001',
     'rlncf' : '101010',
     'rrncf' : '101011',
     'clrf'  : '101100',
     'setf'  : '101101',
     'swapf' : '101110',
-    'movf'  : '101111011',
+    'movf'  : '101111111',
     'movwf' : '101111010',
     'movlw' : '111111001',
     'bcf'   : '010001',
@@ -52,23 +52,26 @@ def switch(x):
     return codeDict.get(x, "000000")
 
 binaryCode = []
-with open("codigo.asm", "r") as file:
+with open("contador.asm", "r") as file:
     for line in file:
         sLine = line.split()
+        print(sLine)
         sLine[0] = sLine[0].lower()
         opcode = ''
         opcode = switch(sLine[0])
         nbit = ''
         if (len(opcode) > 6):
-            if (opcode == "101111011"):
-                opcode[7] = sLine[2]
+            if (opcode == "101111011"): #movwf
+                s = list(opcode)
+                s[7] = sLine[2]
+                opcode[7] = "".join(s)
             nbit = sLine[1][1:]
         else:
-            if (opcode == "001100" or opcode == "000110" or opcode == "001000"):
+            if (opcode == "001100" or opcode == "000110" or opcode == "001000"):	# GOTO, RESET, NOP
                 nbit = "00000000000"
             elif (len(sLine) == 3):
                 if (len(sLine[2]) == 3):
-                    nbit = sLine[2] + sLine[1][1:8]
+                    nbit = sLine[2] + sLine[1][1:]
                 else:
                     nbit = sLine[2] + '0' + sLine[1]
             else:
@@ -78,7 +81,7 @@ with open("codigo.asm", "r") as file:
                 else:
                     nbit = '10' + sLine[1]
         opcode = opcode + nbit
-        assert len(opcode) == 17, "Incorrect length: %s" % sLine
+        assert len(opcode) == 17, "Incorrect length: %s" % opcode
         binaryCode.append(opcode)
 
 with open("rom.vhd", "w") as rom:
