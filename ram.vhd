@@ -9,7 +9,7 @@ entity RAM is
 	k : integer := 256						-- Number of words
 	);
 	port(
-	clk 	  : in std_logic;
+	clk, rst 	  : in std_logic;
 	storeAddr : in std_logic_vector(n - 1 downto 0);
 	write     : in std_logic;
 	read 	  : in std_logic;
@@ -36,9 +36,13 @@ begin
 	end process ReadP;
 	
 	-- Write control
-	WriteP : process(clk)
+	WriteP : process(clk, rst)
 	begin
-		if (clk'event and clk='1') then
+		if (rst = '0') then
+			for i in 0 to k - 1 loop
+				ramm(i) <= (others => '0');
+			end loop;
+		elsif (clk'event and clk='1') then
 			if (write = '1') then
 				ramm(to_integer(unsigned(storeAddr))) <= dataIn;
 			end if;
