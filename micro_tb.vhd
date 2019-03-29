@@ -19,5 +19,5 @@ architecture bench of tbm is
 begin
   M : master port map(clk, rst, DP1, DP2, DP3, DP4, leds);
   clk <= not clk after 10 ns;
-  rst <= '1';
+  rst <= '0', '1' after 10 ns;
 end bench;
