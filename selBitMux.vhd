@@ -9,11 +9,13 @@ entity selBitMux is
 end selBitMux;
 
 architecture mux of selBitMux is
+	signal msbInstrucion : std_logic_vector(5 downto 0);
 begin
-  process(instruction)
+  msbInstrucion <= instruction(8 downto 3);
+  process(instruction, msbInstrucion)
   begin
-    case instruction is
-    when "010001---" | "010010---" | "010011---" | "010100---"  | "010101---" =>
+    case msbInstrucion is
+    when "010001" | "010010" | "010011" | "010100"  | "010101" =>
       selBit <= instruction(2 downto 0);
     when others =>
       selBit <= (others => '0');
