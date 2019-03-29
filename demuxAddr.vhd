@@ -16,7 +16,9 @@ begin
   begin
     if (addrSel = '0') then
       addr <= D1;
+		literalV <= (others => 'Z');
     else
+		addr <= (others => 'Z');
       literalV <= D1;
     end if;
   end process;
