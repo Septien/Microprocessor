@@ -20,7 +20,7 @@ architecture acum of WorkingRegister is
   signal Qp, Qn : std_logic_vector( n - 1 downto 0 ) := ( others => '0' );
   signal bp, bn : std_logic := '0';                        -- Hold a bit
 begin
-	combinacional: process (Qp, opt, dataIn)
+	combinacional: process (Qp, opt, dataIn, bp, sel)
 	begin
           case opt is
             when "000" =>                                               -- Clear register
