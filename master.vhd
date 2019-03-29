@@ -76,7 +76,7 @@ architecture micro of master is
 	 k : integer := 4						-- Number of words
 	);
 	port(
-	 clk 	     : in std_logic;
+	 clk, rst 	     : in std_logic;
 	 storeAddr : in std_logic_vector(n - 1 downto 0);
 	 write     : in std_logic;
 	 read 	    : in std_logic;
@@ -179,11 +179,11 @@ architecture micro of master is
 begin
   PGR  : ROM port map(pAddress, instruction);
   CTRL : FSM port map(clk, rst, flags, bitOpR, instruction, addrSel, memSel, mulS, selA, inSel, pSel, load, inc, inc2, read, write, Fn, bitOp, selBit, selBy, opMode);
-  ALU  : ALU1 port map(muxA(7 downto 0), B, Fn, outputRAM, flags);
+  ALU  : ALU1 port map(muxA(7 downto 0), B, Fn, result, flags);
   PC1  : PC port map(clk, rst, addrL, inc, inc2, load, pAddress);
   LIFO : stack port map(clk, rst, opMode, pAddress, addrOut, open, open);
-  MRAM : RAM generic map(8, 8, 256) port map(clk, memLocSel(7 downto 0), write, read, inputRAM, outputRAM, DP1A, DP2A, DP3A, DP4A, ledsA);
-  W    : WorkingRegister port map(rst, clk, outputRAM, bitOp, selBit, bitOpR, B);
+  MRAM : RAM generic map(8, 8, 256) port map(clk, rst, memLocSel(7 downto 0), write, read, inputRAM, outputRAM, DP1A, DP2A, DP3A, DP4A, ledsA);
+  W    : WorkingRegister port map(rst, clk, result, bitOp, selBit, bitOpR, B);
   MUL  : Multiplier_VHDL port map(C(7 downto 0), B, selBy, outMul, addrMul);
   DMX  : DemuxAddr port map(instruction(8 downto 0), addrSel, literalV, addr);
   AMUX : mux port map(selA, outputRAMA, literalV, muxA);
@@ -191,7 +191,7 @@ begin
   MPC  : mux port map(pSel, addr, addrOut, addrL);
   MLMX : mux port map(memSel, addr, addrMul, memLocSel);
   MXIN : mux4a1 port map(inSel, outMul, B, result, inputRAM);
-   
+
   outputRAMA <= '0' & outputRAM; 
   -- To 7seg/leds
   DP1 <= DP1A(6 downto 0);
