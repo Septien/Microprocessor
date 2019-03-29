@@ -23,10 +23,10 @@ begin
     case sel is
       when "01" =>
         result <= MultResult ( bn - 1 downto 0 );
-        address <= "00000000";              -- Store result on address zero of RAM
+        address <= "000000000";              -- Store result on address zero of RAM
       when "10" =>
         result <= MultResult ( doble - 1 downto bn );
-        address <= "00000001";              -- Store result on address one of RAM
+        address <= "000000001";              -- Store result on address one of RAM
 	  when others =>
         result <= ( others => 'Z' );
         address <= ( others => 'Z' );
