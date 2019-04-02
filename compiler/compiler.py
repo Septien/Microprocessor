@@ -53,7 +53,9 @@ def switch(x):
 
 binaryCode = []
 with open("contador.asm", "r") as file:
+    i = 0
     for line in file:
+        i += 1
         sLine = line.split()
         print(sLine)
         sLine[0] = sLine[0].lower()
@@ -81,7 +83,7 @@ with open("contador.asm", "r") as file:
                 else:
                     nbit = '10' + sLine[1]
         opcode = opcode + nbit
-        assert len(opcode) == 17, "Incorrect length: %s" % opcode
+        assert len(opcode) == 17, "Incorrect length: {0}, at line: {1}".format(opcode, i)
         binaryCode.append(opcode)
 
 with open("rom.vhd", "w") as rom:
