@@ -21,23 +21,23 @@ begin
 			  inc <= '0';
 			  inc2 <= '0';
 			-- INCFSZ, DECFSZ
-			elsif ((instruction = "0000010" or instruction = "0001010") and z = '1') then
+			elsif ((instruction = "0000101" or instruction = "0001110") and z = '1') then
 			  inc <= '0';
 				inc2 <= '1';
 			-- INFSNZ, DCFSNZ
-			elsif ((instruction = "0000001" or instruction = "0001001") and z = '0') then
+			elsif ((instruction = "0000111" or instruction = "0001111") and z = '0') then
 				inc <= '0';
 				inc2 <= '1';
-			-- CPSEQ
-			elsif (instruction = "1000100" and eq = '1') then
+			-- CPFSEQ
+			elsif (instruction = "1000001" and eq = '1') then
 			  inc <= '0';
 				inc2 <= '1';
-			-- CPSGT
+			-- CPFSGT
 			elsif (instruction = "1000010" and gt = '1') then
 				inc <= '0';
 				inc2 <= '1';
-			-- CPSLT
-			elsif (instruction = "1000001" and lt = '1') then
+			-- CPFSLT
+			elsif (instruction = "1000011" and lt = '1') then
 				inc <= '0';
 				inc2 <= '1';
 			else
