@@ -49,7 +49,7 @@ begin
 	dataOut <= Qp;
   opResult <= bp;
 
-	secuencial: process(RST,CLK)
+	secuencial: process(RST,CLK, Qn, bn, sel)
 	begin
 		if(rst = '0') then
 			Qp <= ( others => '0' );
